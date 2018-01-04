@@ -1,5 +1,6 @@
 FROM alpine:3.6
-LABEL maintainer "André Peters <andre.peters@servercow.de>"
+
+LABEL maintainer "Pedro Pereira <pedrogoncalvesp.95@gmail.com>"
 
 # Installation
 RUN apk add --update \

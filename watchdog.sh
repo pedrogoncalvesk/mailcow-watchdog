@@ -70,9 +70,9 @@ get_container_ip() {
   LOOP_C=1
   until [[ ${CONTAINER_IP} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || [[ ${LOOP_C} -gt 5 ]]; do
     sleep 1
-    CONTAINER_ID=$(curl --silent http://dockerapi:8080/containers/json | jq -r ".[] | {name: .Config.Labels[\"com.docker.compose.service\"], id: .Id}" | jq -rc "select( .name | tostring | contains(\"${1}\")) | .id")
+    CONTAINER_ID=$(curl --silent http://dockerapi:${DOCKERAPI_PORT}/containers/json | jq -r ".[] | {name: .Config.Labels[\"com.docker.compose.service\"], id: .Id}" | jq -rc "select( .name | tostring | contains(\"${1}\")) | .id")
     if [[ ! -z ${CONTAINER_ID} ]]; then
-      CONTAINER_IP=$(curl --silent http://dockerapi:8080/containers/${CONTAINER_ID}/json | jq -r '.NetworkSettings.Networks[].IPAddress')
+      CONTAINER_IP=$(curl --silent http://dockerapi:${DOCKERAPI_PORT}/containers/${CONTAINER_ID}/json | jq -r '.NetworkSettings.Networks[].IPAddress')
     fi
     LOOP_C=$((LOOP_C + 1))
   done
@@ -360,12 +360,12 @@ done
 # Monitor dockerapi
 (
 while true; do
-  while nc -z dockerapi 8080; do
+  while nc -z dockerapi ${DOCKERAPI_PORT}; do
     sleep 3
   done
   log_msg "Cannot find dockerapi-mailcow, waiting to recover..."
   kill -STOP ${BACKGROUND_TASKS[*]}
-  until nc -z dockerapi 8080; do
+  until nc -z dockerapi ${DOCKERAPI_PORT}; do
     sleep 3
   done
   kill -CONT ${BACKGROUND_TASKS[*]}
@@ -380,10 +380,10 @@ while true; do
   if [[ ${com_pipe_answer} =~ .+-mailcow ]]; then
     kill -STOP ${BACKGROUND_TASKS[*]}
     sleep 3
-    CONTAINER_ID=$(curl --silent http://dockerapi:8080/containers/json | jq -r ".[] | {name: .Config.Labels[\"com.docker.compose.service\"], id: .Id}" | jq -rc "select( .name | tostring | contains(\"${com_pipe_answer}\")) | .id")
+    CONTAINER_ID=$(curl --silent http://dockerapi:${DOCKERAPI_PORT}/containers/json | jq -r ".[] | {name: .Config.Labels[\"com.docker.compose.service\"], id: .Id}" | jq -rc "select( .name | tostring | contains(\"${com_pipe_answer}\")) | .id")
     if [[ ! -z ${CONTAINER_ID} ]]; then
       log_msg "Sending restart command to ${CONTAINER_ID}..."
-      curl --silent -XPOST http://dockerapi:8080/containers/${CONTAINER_ID}/restart
+      curl --silent -XPOST http://dockerapi:${DOCKERAPI_PORT}/containers/${CONTAINER_ID}/restart
     fi
     log_msg "Wait for restarted container to settle and continue watching..."
     sleep 30s
