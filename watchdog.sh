@@ -87,7 +87,7 @@ nginx_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip nginx-mailcow)
+    host_ip=$(get_container_ip nginx)
     err_c_cur=${err_count}
     /usr/lib/nagios/plugins/check_ping -4 -H ${host_ip} -w 2000,10% -c 4000,100% -p2 1>&2; err_count=$(( ${err_count} + $? ))
     /usr/lib/nagios/plugins/check_http -4 -H ${host_ip} -u / -p 8081 1>&2; err_count=$(( ${err_count} + $? ))
@@ -107,7 +107,7 @@ mysql_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip mysql-mailcow)
+    host_ip=$(get_container_ip mysql)
     err_c_cur=${err_count}
     /usr/lib/nagios/plugins/check_mysql -H ${host_ip} -P 3306 -u ${DBUSER} -p ${DBPASS} -d ${DBNAME} 1>&2; err_count=$(( ${err_count} + $? ))
     /usr/lib/nagios/plugins/check_mysql_query -H ${host_ip} -P 3306 -u ${DBUSER} -p ${DBPASS} -d ${DBNAME} -q "SELECT COUNT(*) FROM information_schema.tables" 1>&2; err_count=$(( ${err_count} + $? ))
@@ -127,7 +127,7 @@ sogo_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip sogo-mailcow)
+    host_ip=$(get_container_ip sogo)
     err_c_cur=${err_count}
     /usr/lib/nagios/plugins/check_http -4 -H ${host_ip} -u /WebServerResources/css/theme-default.css -p 9192 -R md-default-theme 1>&2; err_count=$(( ${err_count} + $? ))
     /usr/lib/nagios/plugins/check_http -4 -H ${host_ip} -u /SOGo.index/ -p 20000 -R "SOGo\sGroupware" 1>&2; err_count=$(( ${err_count} + $? ))
@@ -147,7 +147,7 @@ postfix_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-	host_ip=$(get_container_ip postfix-mailcow)
+	host_ip=$(get_container_ip postfix)
     err_c_cur=${err_count}
     /usr/lib/nagios/plugins/check_smtp -4 -H ${host_ip} -p 589 -f watchdog -C "RCPT TO:null@localhost" -C DATA -C . -R 250 1>&2; err_count=$(( ${err_count} + $? ))
     /usr/lib/nagios/plugins/check_smtp -4 -H ${host_ip} -p 589 -S 1>&2; err_count=$(( ${err_count} + $? ))
@@ -167,7 +167,7 @@ dovecot_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip dovecot-mailcow)
+    host_ip=$(get_container_ip dovecot)
     err_c_cur=${err_count}
     /usr/lib/nagios/plugins/check_smtp -4 -H ${host_ip} -p 24 -f "watchdog" -C "RCPT TO:<watchdog@invalid>" -L -R "User doesn't exist" 1>&2; err_count=$(( ${err_count} + $? ))
     /usr/lib/nagios/plugins/check_imap -4 -H ${host_ip} -p 993 -S -e "OK " 1>&2; err_count=$(( ${err_count} + $? ))
@@ -190,7 +190,7 @@ phpfpm_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip php-fpm-mailcow)
+    host_ip=$(get_container_ip php-fpm)
     err_c_cur=${err_count}
     cgi-fcgi -bind -connect ${host_ip}:9000 | grep "Content-type" 1>&2; err_count=$(( ${err_count} + ($? * 2)))
     /usr/lib/nagios/plugins/check_ping -4 -H ${host_ip} -w 2000,10% -c 4000,100% -p2 1>&2; err_count=$(( ${err_count} + $? ))
@@ -210,7 +210,7 @@ rspamd_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip rspamd-mailcow)
+    host_ip=$(get_container_ip rspamd)
     err_c_cur=${err_count}
     SCORE=$(curl --silent ${host_ip}:11333/scan -d '
 To: null@localhost
@@ -241,7 +241,7 @@ dns_checks() {
   # Reduce error count by 2 after restarting an unhealthy container
   trap "[ ${err_count} -gt 1 ] && err_count=$(( ${err_count} - 2 ))" USR1
   while [ ${err_count} -lt ${THRESHOLD} ]; do
-    host_ip=$(get_container_ip unbound-mailcow)
+    host_ip=$(get_container_ip unbound)
     err_c_cur=${err_count}
     /usr/lib/nagios/plugins/check_dns -H google.com 1>&2; err_count=$(( ${err_count} + ($? * 2)))
     /usr/lib/nagios/plugins/check_dns -s ${host_ip} -H google.com 1>&2; err_count=$(( ${err_count} + ($? * 2)))
@@ -322,16 +322,16 @@ done
 ) &
 BACKGROUND_TASKS+=($!)
 
-(
-while true; do
-  if ! dns_checks; then
-    log_msg "Unbound hit error limit"
-    [[ ! -z ${WATCHDOG_NOTIFY_EMAIL} ]] && mail_error "${WATCHDOG_NOTIFY_EMAIL}" "unbound-mailcow"
-    #echo unbound-mailcow > /tmp/com_pipe
-  fi
-done
-) &
-BACKGROUND_TASKS+=($!)
+# (
+# while true; do
+#   if ! dns_checks; then
+#     log_msg "Unbound hit error limit"
+#     [[ ! -z ${WATCHDOG_NOTIFY_EMAIL} ]] && mail_error "${WATCHDOG_NOTIFY_EMAIL}" "unbound-mailcow"
+#     echo unbound-mailcow > /tmp/com_pipe
+#   fi
+# done
+# ) &
+# BACKGROUND_TASKS+=($!)
 
 (
 while true; do
@@ -363,7 +363,7 @@ while true; do
   while nc -z dockerapi ${DOCKERAPI_PORT}; do
     sleep 3
   done
-  log_msg "Cannot find dockerapi-mailcow, waiting to recover..."
+  log_msg "Cannot find dockerapi, waiting to recover..."
   kill -STOP ${BACKGROUND_TASKS[*]}
   until nc -z dockerapi ${DOCKERAPI_PORT}; do
     sleep 3
