@@ -68,11 +68,12 @@ get_container_ip() {
   CONTAINER_ID=
   CONTAINER_IP=
   LOOP_C=1
-  until [[ ${CONTAINER_IP} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || [[ ${LOOP_C} -gt 5 ]]; do
+  until [[ ${CONTAINER_IP} =~ ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]] || [[ ${LOOP_C} -gt 5 ]]; do
     sleep 1
     CONTAINER_ID=$(curl --silent http://dockerapi:${DOCKERAPI_PORT}/containers/json | jq -r ".[] | {name: .Config.Labels[\"com.docker.compose.service\"], id: .Id}" | jq -rc "select( .name | tostring | contains(\"${1}\")) | .id")
     if [[ ! -z ${CONTAINER_ID} ]]; then
-      CONTAINER_IP=$(curl --silent http://dockerapi:${DOCKERAPI_PORT}/containers/${CONTAINER_ID}/json | jq -r '.NetworkSettings.Networks[].IPAddress')
+      CONTAINER_IP=$(curl --silent http://dockerapi:${DOCKERAPI_PORT}/containers/${CONTAINER_ID}/json | jq -r '.Config.Labels["io.rancher.container.ip"]')
+      CONTAINER_IP=$(echo ${CONTAINER_IP} | cut -d'/' -f 1)
     fi
     LOOP_C=$((LOOP_C + 1))
   done
